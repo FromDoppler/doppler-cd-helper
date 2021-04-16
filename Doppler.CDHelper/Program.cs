@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Doppler.HelloMicroservice.Logging;
+using Doppler.CDHelper.Logging;
 using Serilog;
 
-namespace Doppler.HelloMicroservice
+namespace Doppler.CDHelper
 {
     public class Program
     {

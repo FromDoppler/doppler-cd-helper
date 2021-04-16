@@ -1,7 +1,7 @@
 using System;
 using Xunit;
 
-namespace Doppler.HelloMicroservice
+namespace Doppler.CDHelper
 {
     public class UnitTest1
     {

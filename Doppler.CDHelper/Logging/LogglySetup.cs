@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
 
-namespace Doppler.HelloMicroservice.Logging
+namespace Doppler.CDHelper.Logging
 {
     public static class LogglySetup
     {

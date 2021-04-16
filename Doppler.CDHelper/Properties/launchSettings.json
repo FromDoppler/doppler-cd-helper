@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Doppler.HelloMicroservice": {
+    "Doppler.CDHelper": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "swagger",

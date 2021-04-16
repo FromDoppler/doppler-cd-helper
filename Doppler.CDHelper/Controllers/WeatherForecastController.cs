@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Doppler.HelloMicroservice.Controllers
+namespace Doppler.CDHelper.Controllers
 {
     [ApiController]
     [Route("[controller]")]

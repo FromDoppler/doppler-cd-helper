@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <RootNamespace>Doppler.HelloMicroservice</RootNamespace>
+    <RootNamespace>Doppler.CDHelper</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Doppler.HelloMicroservice\Doppler.HelloMicroservice.csproj" />
+    <ProjectReference Include="..\Doppler.CDHelper\Doppler.CDHelper.csproj" />
   </ItemGroup>
 
 </Project>

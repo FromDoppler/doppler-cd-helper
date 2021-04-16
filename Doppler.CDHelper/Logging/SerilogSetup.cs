@@ -4,7 +4,7 @@ using Serilog;
 using Serilog.Events;
 using System;
 
-namespace Doppler.HelloMicroservice.Logging
+namespace Doppler.CDHelper.Logging
 {
     public static class SerilogSetup
     {

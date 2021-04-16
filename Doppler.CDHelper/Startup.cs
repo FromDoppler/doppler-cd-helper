@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 
-namespace Doppler.HelloMicroservice
+namespace Doppler.CDHelper
 {
     public class Startup
     {
@@ -29,7 +29,7 @@ namespace Doppler.HelloMicroservice
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Doppler.HelloMicroservice", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Doppler.CDHelper", Version = "v1" });
 
                 var baseUrl = Configuration.GetValue<string>("BaseURL");
                 if (!string.IsNullOrEmpty(baseUrl))
@@ -48,7 +48,7 @@ namespace Doppler.HelloMicroservice
             }
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Doppler.HelloMicroservice v1"));
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Doppler.CDHelper v1"));
 
             app.UseStaticFiles();
 

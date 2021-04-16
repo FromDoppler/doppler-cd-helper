@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
-namespace Doppler.HelloMicroservice
+namespace Doppler.CDHelper
 {
     public class IntegrationTest1
         : IClassFixture<WebApplicationFactory<Startup>>
