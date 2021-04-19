@@ -5,9 +5,6 @@
 # @base=https://apisqa.fromdoppler.net/cd-helper
 
 ###
-GET {{base}}/WeatherForecast
-
-###
 GET {{base}}/swagger/index.html
 
 ###
