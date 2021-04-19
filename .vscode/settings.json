@@ -3,6 +3,8 @@
         "ASPNETCORE",
         "Jenkinsfile",
         "Jenkisfile",
+        "Loggly",
+        "Serilog",
         "dockerignore",
         "eclint",
         "editorconfig",
