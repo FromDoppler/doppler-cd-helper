@@ -8,7 +8,7 @@ namespace Doppler.CDHelper.Logging
 {
     public static class SerilogSetup
     {
-        public static LoggerConfiguration SetupSeriLog(
+        public static LoggerConfiguration SetupSerilog(
             this LoggerConfiguration loggerConfiguration,
             IConfiguration configuration,
             IHostEnvironment hostEnvironment)
@@ -20,7 +20,8 @@ namespace Doppler.CDHelper.Logging
                 .Enrich.WithProperty("Application", hostEnvironment.ApplicationName)
                 .Enrich.WithProperty("Environment", hostEnvironment.EnvironmentName)
                 .Enrich.WithProperty("Platform", Environment.OSVersion.Platform)
-                .Enrich.WithProperty("Host", Environment.MachineName)
+                .Enrich.WithProperty("Runtime", Environment.Version)
+                .Enrich.WithProperty("OSVersion", Environment.OSVersion)
                 .Enrich.FromLogContext();
 
             if (!hostEnvironment.IsDevelopment())

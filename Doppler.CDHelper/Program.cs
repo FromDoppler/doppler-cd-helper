@@ -22,7 +22,7 @@ namespace Doppler.CDHelper
             Host.CreateDefaultBuilder(args)
                 .UseSerilog((hostContext, loggerConfiguration) =>
                 {
-                    loggerConfiguration.SetupSeriLog(hostContext.Configuration, hostContext.HostingEnvironment);
+                    loggerConfiguration.SetupSerilog(hostContext.Configuration, hostContext.HostingEnvironment);
                 })
                 .ConfigureAppConfiguration((hostContext, configurationBuilder) =>
                 {
