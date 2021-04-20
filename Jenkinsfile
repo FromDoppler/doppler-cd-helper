@@ -54,16 +54,17 @@ pipeline {
                     steps {
                         withDockerRegistry(credentialsId: "${DOCKER_CREDENTIALS_ID}", url: "") {
                             sh 'sh build-n-publish.sh --image=${DOCKER_IMAGE_NAME} --commit=${GIT_COMMIT} --name=main'
+                            sh 'sh build-n-publish.sh --image=${DOCKER_IMAGE_NAME} --commit=${GIT_COMMIT} --name=TEST'
                         }
                     }
                 }
-                stage('Publish pre-release images from INT') {
+                stage('Publish pre-release images from TEST') {
                     when {
-                        branch 'INT'
+                        branch 'TEST'
                     }
                     steps {
                         withDockerRegistry(credentialsId: "${DOCKER_CREDENTIALS_ID}", url: "") {
-                            sh 'sh build-n-publish.sh --image=${DOCKER_IMAGE_NAME} --commit=${GIT_COMMIT} --name=INT'
+                            sh 'sh build-n-publish.sh --image=${DOCKER_IMAGE_NAME} --commit=${GIT_COMMIT} --name=TEST'
                         }
                     }
                 }

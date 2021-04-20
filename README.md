@@ -66,6 +66,17 @@ For the moment, for simplicity, we will base it on Swarmpit API, but in the futu
 
 ## Conventions / development processes / CI / CD
 
+When a commit is merged into the `main` branch or when a commit is pushed to the `TEST` branch, an image with the label `TEST` is generated. This image is used in our testing environment (related to Doppler's INT and QA environments).
+
+When we create a branch with the format `v#.#.#` CI creates the following images:
+
+- `v#`
+- `v#.#`
+- `v#.#.#`
+- `v#.#.#_{commitId}`
+
+In the Production environment, we use the image `v1`.
+
 See more information about these topics in
 
 - [Hello-Microservice repository](https://github.com/FromDoppler/hello-microservice/blob/main/README.md)
