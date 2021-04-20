@@ -48,20 +48,20 @@ namespace Doppler.CDHelper
                 JsonContent.Create(new { callback_url = callbackUrl }));
 
             // Assert
-            object stateValue = null;
+
+            // It is a FormattedLogValues object
+            // See: https://github.com/dotnet/runtime/blob/01b7e73cd378145264a7cb7a09365b41ed42b240/src/libraries/Microsoft.Extensions.Logging.Abstractions/src/FormattedLogValues.cs#L16
+            IReadOnlyList<KeyValuePair<string, object>> logParameters = null;
 
             loggerMock.Verify(
                 x => x.Log(
                     It.IsAny<LogLevel>(),
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => AssertHelper.GetValueAndContinue(v, out stateValue)),
+                    It.Is<It.IsAnyType>((v, t) => AssertHelper.IsTypeAndGetValue(v, out logParameters)),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()),
                     Times.Once);
 
-            // It is a FormattedLogValues object
-            // See: https://github.com/dotnet/runtime/blob/01b7e73cd378145264a7cb7a09365b41ed42b240/src/libraries/Microsoft.Extensions.Logging.Abstractions/src/FormattedLogValues.cs#L16
-            var logParameters = Assert.IsType<IReadOnlyList<KeyValuePair<string, object>>>(stateValue);
             Assert.Contains($"secret: {secret};", logParameters.ToString());
             Assert.Contains(
                 logParameters,

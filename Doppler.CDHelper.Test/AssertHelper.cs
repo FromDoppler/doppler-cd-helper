@@ -13,4 +13,19 @@ namespace Doppler.CDHelper
             return true;
         }
 
+        public static bool IsTypeAndGetValue<TIn, TOut>(TIn input, out TOut output)
+        {
+            if (input is TOut aux)
+            {
+                output = aux;
+                return true;
+            }
+            else
+            {
+                output = default;
+                return false;
+            }
+        }
+    }
+
 }
