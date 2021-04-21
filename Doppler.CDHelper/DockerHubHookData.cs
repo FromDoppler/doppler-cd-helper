@@ -2,7 +2,7 @@ using System;
 
 namespace Doppler.CDHelper
 {
-    public class DockerHubHookData
+    public record DockerHubHookData
     {
         public string callback_url { get; set; }
 
