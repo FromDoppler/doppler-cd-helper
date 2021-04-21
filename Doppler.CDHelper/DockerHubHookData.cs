@@ -4,7 +4,7 @@ namespace Doppler.CDHelper
 {
     public record DockerHubHookData
     {
-        public string callback_url { get; set; }
+        public string callback_url { get; init; }
 
         // TODO: add more properties in order to represent a model like this:
         // {
