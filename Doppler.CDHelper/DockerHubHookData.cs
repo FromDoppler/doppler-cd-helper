@@ -6,7 +6,7 @@ namespace Doppler.CDHelper
     {
         public string callback_url { get; init; }
 
-        // TODO: add more properties in order to represent a model like this:
+        // TODO: add more properties in order to represent the Docker Hub data:
         // {
         //     "push_data": {
         //         "pushed_at": 1618614391,
