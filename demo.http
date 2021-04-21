@@ -11,7 +11,7 @@ GET {{base}}/swagger/index.html
 GET {{base}}/version.txt
 
 ###
-POST {{base}}/cd-helper/hooks/secret123/
+POST {{base}}/hooks/secret123/
 x-amzn-trace-id: Root=1-607a1878-564958bd1de5899f57204305
 content-length: 623
 accept-encoding: gzip, deflate
