@@ -1,7 +1,10 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Doppler.CDHelper
 {
+    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Allow properties with underscore because it represents a JSON")]
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Allow properties with camelCase because it represents a JSON")]
     public record DockerHubHookData
     {
         public string callback_url { get; init; }
