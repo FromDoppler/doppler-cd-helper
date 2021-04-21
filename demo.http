@@ -1,15 +1,46 @@
 # Use [REST Client](https://marketplace.visualstudio.com/items?itemName=humao.rest-client) to run these requests
 
 @base=http://localhost:5000
-# @base=https://apis.fromdoppler.com/hello
-# @base=https://apisint.fromdoppler.net/hello
-# @base=https://apisqa.fromdoppler.net/hello
-
-###
-GET {{base}}/WeatherForecast
+# @base=https://apis.fromdoppler.com/cd-helper
+# @base=https://apisqa.fromdoppler.net/cd-helper
 
 ###
 GET {{base}}/swagger/index.html
 
 ###
 GET {{base}}/version.txt
+
+###
+POST {{base}}/cd-helper/hooks/secret123/
+x-amzn-trace-id: Root=1-607a1878-564958bd1de5899f57204305
+content-length: 623
+accept-encoding: gzip, deflate
+accept: */*
+user-agent: python-requests/2.22.0
+content-type: application/json
+
+{
+    "push_data": {
+        "pushed_at": 1618614391,
+        "images": [],
+        "tag": "pr-1",
+        "pusher": "dopplerdock"
+    },
+    "callback_url": "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/",
+    "repository": {
+        "status": "Active",
+        "description": "",
+        "is_trusted": false,
+        "full_description": null,
+        "repo_url": "https://hub.docker.com/r/dopplerdock/doppler-cd-helper",
+        "owner": "dopplerdock",
+        "is_official": false,
+        "is_private": true,
+        "name": "doppler-cd-helper",
+        "namespace": "dopplerdock",
+        "star_count": 0,
+        "comment_count": 0,
+        "date_created": 1618603558,
+        "repo_name": "dopplerdock/doppler-cd-helper"
+    }
+}
