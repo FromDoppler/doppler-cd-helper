@@ -57,10 +57,10 @@ namespace Doppler.CDHelper
                 x => x.Log(
                     It.IsAny<LogLevel>(),
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => AssertHelper.IsTypeAndGetValue(v, out logParameters)),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString().StartsWith("Hook event!") && AssertHelper.IsTypeAndGetValue(v, out logParameters)),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-                    Times.Once);
+                Times.Once);
 
             Assert.Contains($"secret: {secret};", logParameters.ToString());
             Assert.Contains(
