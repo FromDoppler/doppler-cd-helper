@@ -26,6 +26,7 @@ namespace Doppler.CDHelper
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDummySwarmClient();
+            services.AddDummySwarmServiceSelector();
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {

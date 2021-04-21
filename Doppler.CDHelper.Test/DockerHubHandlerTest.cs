@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Doppler.CDHelper.Controllers;
 using Doppler.CDHelper.SwarmClient;
+using Doppler.CDHelper.SwarmServiceSelection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -70,17 +71,23 @@ namespace Doppler.CDHelper
         }
 
         [Fact]
-        public async Task POST_dockerhub_handler_should_get_services_from_SwarmClient()
+        public async Task POST_dockerhub_handler_should_get_services_from_SwarmClient_and_filter_with_service_selector()
         {
             // Arrange
             var callbackUrl = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
 
+            var currentServices = new[] { new SwarmServiceDescription() };
+
             var swarmClientMock = new Mock<ISwarmClient>();
+            var swarmServiceSelectorMock = new Mock<ISwarmServiceSelector>();
+
+            swarmClientMock.Setup(x => x.GetServices()).ReturnsAsync(currentServices);
 
             using var customFactory = _factory.WithWebHostBuilder(c =>
             {
                 c.ConfigureServices(s => s
-                    .AddSingleton(swarmClientMock.Object));
+                    .AddSingleton(swarmClientMock.Object)
+                    .AddSingleton(swarmServiceSelectorMock.Object));
             });
 
             var client = customFactory.CreateClient(new WebApplicationFactoryClientOptions()
@@ -95,6 +102,11 @@ namespace Doppler.CDHelper
 
             // Assert
             swarmClientMock.Verify(x => x.GetServices(), Times.Once);
+            swarmServiceSelectorMock.Verify(
+                x => x.GetServicesToRedeploy(
+                    It.Is<DockerHubHookData>(v => v.callback_url == callbackUrl),
+                    currentServices),
+                Times.Once);
         }
     }
 }
