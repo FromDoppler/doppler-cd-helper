@@ -33,7 +33,12 @@ namespace Doppler.CDHelper.Controllers
 
             var currentServices = await _swarmClient.GetServices();
             var servicesToRedeploy = _swarmServiceSelector.GetServicesToRedeploy(data, currentServices);
-            // TODO: redeploy the identified services
+
+            foreach (var service in servicesToRedeploy)
+            {
+                _logger.LogInformation("Redeploying {@service}", service);
+                await _swarmClient.RedeployService(service.id);
+            }
         }
     }
 }

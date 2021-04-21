@@ -8,5 +8,6 @@ namespace Doppler.CDHelper.SwarmClient
     public interface ISwarmClient
     {
         Task<IEnumerable<SwarmServiceDescription>> GetServices();
+        Task RedeployService(string serviceId);
     }
 }

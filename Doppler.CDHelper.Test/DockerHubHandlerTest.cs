@@ -71,17 +71,31 @@ namespace Doppler.CDHelper
         }
 
         [Fact]
-        public async Task POST_dockerhub_handler_should_get_services_from_SwarmClient_and_filter_with_service_selector()
+        public async Task POST_dockerhub_handler_should_get_services_from_SwarmClient_filter_with_service_selector_and_redeploy_selected_ones()
         {
             // Arrange
             var callbackUrl = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
 
             var currentServices = new[] { new SwarmServiceDescription() };
 
+            var selectedServiceId1 = "selectedServiceId1";
+            var selectedServiceId2 = "selectedServiceId2";
+            var selectedServices = new[]
+            {
+                new SwarmServiceDescription() { id = selectedServiceId1 },
+                new SwarmServiceDescription() { id = selectedServiceId2 }
+            };
+
             var swarmClientMock = new Mock<ISwarmClient>();
             var swarmServiceSelectorMock = new Mock<ISwarmServiceSelector>();
 
             swarmClientMock.Setup(x => x.GetServices()).ReturnsAsync(currentServices);
+
+            swarmServiceSelectorMock
+                .Setup(x => x.GetServicesToRedeploy(
+                    It.Is<DockerHubHookData>(v => v.callback_url == callbackUrl),
+                    currentServices))
+                .Returns(selectedServices);
 
             using var customFactory = _factory.WithWebHostBuilder(c =>
             {
@@ -102,11 +116,9 @@ namespace Doppler.CDHelper
 
             // Assert
             swarmClientMock.Verify(x => x.GetServices(), Times.Once);
-            swarmServiceSelectorMock.Verify(
-                x => x.GetServicesToRedeploy(
-                    It.Is<DockerHubHookData>(v => v.callback_url == callbackUrl),
-                    currentServices),
-                Times.Once);
+            swarmClientMock.Verify(x => x.RedeployService(It.IsAny<string>()), Times.Exactly(selectedServices.Count()));
+            swarmClientMock.Verify(x => x.RedeployService(selectedServiceId1), Times.Once);
+            swarmClientMock.Verify(x => x.RedeployService(selectedServiceId2), Times.Once);
         }
     }
 }

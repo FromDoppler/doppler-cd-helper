@@ -26,5 +26,11 @@ namespace Doppler.CDHelper.SwarmClient
             _logger.LogInformation("GetServices()");
             return Task.FromResult(_dummyResult.Value);
         }
+
+        public Task RedeployService(string serviceId)
+        {
+            _logger.LogInformation("RedeployService({serviceId})", serviceId);
+            return Task.CompletedTask;
+        }
     }
 }
