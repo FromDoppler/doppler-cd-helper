@@ -30,7 +30,7 @@ namespace Doppler.CDHelper
         {
             // Arrange
             var secret = "my_secret";
-            var callbackUrl = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+            var callback_url = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
 
             var loggerMock = new Mock<ILogger<HooksController>>();
 
@@ -47,7 +47,10 @@ namespace Doppler.CDHelper
             // Act
             var response = await client.PostAsync(
                 $"/hooks/{secret}/",
-                JsonContent.Create(new { callback_url = callbackUrl }));
+                JsonContent.Create(new
+                {
+                    callback_url,
+                }));
 
             // Assert
 
@@ -65,16 +68,17 @@ namespace Doppler.CDHelper
                 Times.Once);
 
             Assert.Contains($"secret: {secret};", logParameters.ToString());
-            Assert.Contains(
-                logParameters,
-                x => x.Key == "@data" && x.Value is DockerHubHookData data && data.callback_url == callbackUrl);
+            Assert.Contains(logParameters, x =>
+                x.Key == "@data"
+                && x.Value is DockerHubHookData data
+                && data.callback_url == callback_url);
         }
 
         [Fact]
         public async Task POST_dockerhub_handler_should_get_services_from_SwarmClient_filter_with_service_selector_and_redeploy_selected_ones()
         {
             // Arrange
-            var callbackUrl = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+            var callback_url = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
 
             var currentServices = new[] { new SwarmServiceDescription() };
 
@@ -93,7 +97,8 @@ namespace Doppler.CDHelper
 
             swarmServiceSelectorMock
                 .Setup(x => x.GetServicesToRedeploy(
-                    It.Is<DockerHubHookData>(v => v.callback_url == callbackUrl),
+                    It.Is<DockerHubHookData>(v =>
+                        v.callback_url == callback_url),
                     currentServices))
                 .Returns(selectedServices);
 
@@ -112,7 +117,10 @@ namespace Doppler.CDHelper
             // Act
             var response = await client.PostAsync(
                 "/hooks/my_secret/",
-                JsonContent.Create(new { callback_url = callbackUrl }));
+                JsonContent.Create(new
+                {
+                    callback_url,
+                }));
 
             // Assert
             swarmClientMock.Verify(x => x.GetServices(), Times.Once);
