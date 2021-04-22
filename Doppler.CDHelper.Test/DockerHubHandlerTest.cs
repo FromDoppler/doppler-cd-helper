@@ -38,7 +38,9 @@ namespace Doppler.CDHelper
 
             using var customFactory = _factory.WithWebHostBuilder(c =>
             {
-                c.ConfigureServices(s => s.AddSingleton(loggerMock.Object));
+                c.ConfigureServices(s => s
+                    .AddSingleton(loggerMock.Object)
+                    .AddSingleton(Mock.Of<ISwarmClient>()));
             });
 
             var client = customFactory.CreateClient(new WebApplicationFactoryClientOptions()

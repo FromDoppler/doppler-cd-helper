@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Doppler.CDHelper.SwarmClient;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -28,6 +29,15 @@ namespace Microsoft.Extensions.DependencyInjection
             };
             services.AddSingleton<DummySwarmClientResult>(new DummySwarmClientResult(clientResult));
             services.AddSingleton<ISwarmClient, DummySwarmClient>();
+            return services;
+        }
+
+        public static IServiceCollection AddSwarmpitSwarmClient(
+            this IServiceCollection services,
+            IConfiguration configuration)
+        {
+            services.Configure<SwarmpitSwarmClientSettings>(configuration.GetSection("SwarmpitSwarmClient"));
+            services.AddSingleton<ISwarmClient, SwarmpitSwarmClient>();
             return services;
         }
     }
