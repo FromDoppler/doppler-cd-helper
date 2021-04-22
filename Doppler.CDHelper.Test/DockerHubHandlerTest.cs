@@ -59,6 +59,7 @@ namespace Doppler.CDHelper
                 }));
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             // It is a FormattedLogValues object
             // See: https://github.com/dotnet/runtime/blob/01b7e73cd378145264a7cb7a09365b41ed42b240/src/libraries/Microsoft.Extensions.Logging.Abstractions/src/FormattedLogValues.cs#L16
@@ -137,6 +138,7 @@ namespace Doppler.CDHelper
                 }));
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             swarmClientMock.Verify(x => x.GetServices(), Times.Once);
             swarmClientMock.Verify(x => x.RedeployService(It.IsAny<string>()), Times.Exactly(selectedServices.Count()));
             swarmClientMock.Verify(x => x.RedeployService(selectedServiceId1), Times.Once);
@@ -239,6 +241,7 @@ namespace Doppler.CDHelper
                 JsonContent.Create(hookData));
 
             // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             swarmClientMock.Verify(x => x.RedeployService(It.IsAny<string>()), Times.Exactly(2));
             swarmClientMock.Verify(x => x.RedeployService(helloServiceInt.id), Times.Once);
             swarmClientMock.Verify(x => x.RedeployService(helloServiceIntWithAlternativeConfiguration.id), Times.Once);
