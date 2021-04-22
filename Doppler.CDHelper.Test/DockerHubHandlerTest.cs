@@ -30,7 +30,9 @@ namespace Doppler.CDHelper
         {
             // Arrange
             var secret = "my_secret";
-            var callbackUrl = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+            var callback_url = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+            var tag = "tag";
+            var repo_name = "repoName";
 
             var loggerMock = new Mock<ILogger<HooksController>>();
 
@@ -47,7 +49,12 @@ namespace Doppler.CDHelper
             // Act
             var response = await client.PostAsync(
                 $"/hooks/{secret}/",
-                JsonContent.Create(new { callback_url = callbackUrl }));
+                JsonContent.Create(new
+                {
+                    callback_url,
+                    push_data = new { tag },
+                    repository = new { repo_name }
+                }));
 
             // Assert
 
@@ -65,16 +72,21 @@ namespace Doppler.CDHelper
                 Times.Once);
 
             Assert.Contains($"secret: {secret};", logParameters.ToString());
-            Assert.Contains(
-                logParameters,
-                x => x.Key == "@data" && x.Value is DockerHubHookData data && data.callback_url == callbackUrl);
+            Assert.Contains(logParameters, x =>
+                x.Key == "@data"
+                && x.Value is DockerHubHookData data
+                && data.callback_url == callback_url
+                && data.push_data.tag == tag
+                && data.repository.repo_name == repo_name);
         }
 
         [Fact]
         public async Task POST_dockerhub_handler_should_get_services_from_SwarmClient_filter_with_service_selector_and_redeploy_selected_ones()
         {
             // Arrange
-            var callbackUrl = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+            var callback_url = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+            var tag = "tag";
+            var repo_name = "repoName";
 
             var currentServices = new[] { new SwarmServiceDescription() };
 
@@ -93,7 +105,10 @@ namespace Doppler.CDHelper
 
             swarmServiceSelectorMock
                 .Setup(x => x.GetServicesToRedeploy(
-                    It.Is<DockerHubHookData>(v => v.callback_url == callbackUrl),
+                    It.Is<DockerHubHookData>(v =>
+                        v.callback_url == callback_url
+                        && v.push_data.tag == tag
+                        && v.repository.repo_name == repo_name),
                     currentServices))
                 .Returns(selectedServices);
 
@@ -112,13 +127,119 @@ namespace Doppler.CDHelper
             // Act
             var response = await client.PostAsync(
                 "/hooks/my_secret/",
-                JsonContent.Create(new { callback_url = callbackUrl }));
+                JsonContent.Create(new
+                {
+                    callback_url,
+                    push_data = new { tag },
+                    repository = new { repo_name }
+                }));
 
             // Assert
             swarmClientMock.Verify(x => x.GetServices(), Times.Once);
             swarmClientMock.Verify(x => x.RedeployService(It.IsAny<string>()), Times.Exactly(selectedServices.Count()));
             swarmClientMock.Verify(x => x.RedeployService(selectedServiceId1), Times.Once);
             swarmClientMock.Verify(x => x.RedeployService(selectedServiceId2), Times.Once);
+        }
+
+        [Fact]
+        public async Task POST_dockerhub_handler_should_filter_services_and_update_filtered_ones()
+        {
+            // Arrange
+            const string helloRepositoryName = "dopplerdock/hello-microservice";
+            const string cdHelperRepositoryName = "dopplerdock/doppler-cd-helper";
+            const string intTag = "INT";
+            const string qaTag = "QA";
+
+            var hookData = new DockerHubHookData()
+            {
+                callback_url = "https://callback_url",
+                push_data = new DockerHubHookDataPushData()
+                {
+                    tag = intTag
+                },
+                repository = new DockerHubHookDataRepository()
+                {
+                    repo_name = helloRepositoryName
+                }
+            };
+
+            // should be redeployed
+            var helloServiceInt = new SwarmServiceDescription()
+            {
+                id = "penpnhep0bsciofxzd542v62n",
+                serviceName = "hello-int_hello-service",
+                repository = new SwarmServiceDescriptionRepository()
+                {
+                    name = helloRepositoryName,
+                    tag = intTag,
+                    imageDigest = "sha256:c7a459f13dbf082fe9b6631783f897d54978a32cc91aa8dee5fcb5630fa18a0b"
+                }
+            };
+
+            // should not be redeployed
+            var cdHelperServiceInt = new SwarmServiceDescription()
+            {
+                id = "qn3jq891p77lyigwysj4fcww2",
+                serviceName = "swarmpit_doppler-cd-helper",
+                repository = new SwarmServiceDescriptionRepository()
+                {
+                    name = cdHelperRepositoryName,
+                    tag = intTag,
+                    imageDigest = "sha256:a247c00ad3ae505bbcbcbc48eb58a50a16e0628339803da65c9081be365b3b9c"
+                }
+            };
+
+            // Exactly the same image with another configuration
+            // should be redeployed
+            var helloServiceIntWithAlternativeConfiguration = helloServiceInt with
+            {
+                id = "riq6gv8d0xr9rpagr9lg5xqrw",
+                serviceName = "hello-int_hello-service_with_alternative_configuration",
+            };
+
+            // The same image name with a different tag with another configuration
+            // should not be redeployed
+            var helloServiceQA = helloServiceInt with
+            {
+                id = "riq6gv8d0xr9rpagr9lg5xqrw",
+                serviceName = "hello-int_hello-service_with_alternative_configuration",
+                repository = helloServiceInt.repository with
+                {
+                    tag = qaTag
+                }
+            };
+
+            var currentServices = new[] {
+                helloServiceInt,
+                cdHelperServiceInt,
+                helloServiceIntWithAlternativeConfiguration,
+                helloServiceQA
+            };
+
+            var swarmClientMock = new Mock<ISwarmClient>();
+
+            swarmClientMock.Setup(x => x.GetServices()).ReturnsAsync(currentServices);
+
+            using var customFactory = _factory.WithWebHostBuilder(c =>
+            {
+                c.ConfigureServices(s => s
+                    .AddSingleton(swarmClientMock.Object));
+            });
+
+            var client = customFactory.CreateClient(new WebApplicationFactoryClientOptions()
+            {
+                AllowAutoRedirect = false
+            });
+
+            // Act
+            var response = await client.PostAsync(
+                "/hooks/my_secret/",
+                JsonContent.Create(hookData));
+
+            // Assert
+            swarmClientMock.Verify(x => x.RedeployService(It.IsAny<string>()), Times.Exactly(2));
+            swarmClientMock.Verify(x => x.RedeployService(helloServiceInt.id), Times.Once);
+            swarmClientMock.Verify(x => x.RedeployService(helloServiceIntWithAlternativeConfiguration.id), Times.Once);
         }
     }
 }

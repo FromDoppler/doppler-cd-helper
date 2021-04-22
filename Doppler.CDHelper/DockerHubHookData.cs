@@ -7,8 +7,11 @@ namespace Doppler.CDHelper
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Allow properties with camelCase because it represents a JSON")]
     public record DockerHubHookData
     {
+        public DockerHubHookDataPushData push_data { get; init; }
         public string callback_url { get; init; }
+        public DockerHubHookDataRepository repository { get; init; }
 
+        // IMPORTANT: The digest seems not be present in this payload!
         // TODO: add more properties in order to represent the Docker Hub data:
         // {
         //     "push_data": {
@@ -35,5 +38,20 @@ namespace Doppler.CDHelper
         //         "repo_name": "dopplerdock/doppler-cd-helper"
         //     }
         // }
+    }
+
+    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Allow properties with underscore because it represents a JSON")]
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Allow properties with camelCase because it represents a JSON")]
+    public record DockerHubHookDataPushData
+    {
+        public string tag { get; init; }
+    }
+
+
+    [SuppressMessage("Naming", "CA1707:Identifiers should not contain underscores", Justification = "Allow properties with underscore because it represents a JSON")]
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Allow properties with camelCase because it represents a JSON")]
+    public record DockerHubHookDataRepository
+    {
+        public string repo_name { get; init; }
     }
 }

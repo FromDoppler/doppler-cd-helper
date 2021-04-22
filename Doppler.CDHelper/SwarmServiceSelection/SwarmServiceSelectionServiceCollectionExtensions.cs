@@ -13,5 +13,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<ISwarmServiceSelector, DummySwarmServiceSelector>();
             return services;
         }
+
+        public static IServiceCollection AddSwarmServiceSelector(this IServiceCollection services)
+        {
+            services.AddSingleton<ISwarmServiceSelector, SwarmServiceSelector>();
+            return services;
+        }
     }
 }

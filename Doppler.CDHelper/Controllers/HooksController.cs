@@ -36,6 +36,9 @@ namespace Doppler.CDHelper.Controllers
 
             foreach (var service in servicesToRedeploy)
             {
+                // TODO: Consider compare local service digest with docker hub one.
+                // Since hook data does not contain digest information, we cannot confirm if
+                // the service is not already updated.
                 _logger.LogInformation("Redeploying {@service}", service);
                 await _swarmClient.RedeployService(service.id);
             }
