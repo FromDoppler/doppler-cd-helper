@@ -9,7 +9,9 @@ namespace Doppler.CDHelper.SwarmClient
     [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Allow properties with camelCase because it represents a JSON")]
     public record SwarmServiceDescription
     {
+        public SwarmServiceDescriptionRepository repository { get; init; }
         public string id { get; init; }
+        public string serviceName { get; init; }
 
         // TODO: add more properties in order to represent the Swarmpit response:
         //   {
@@ -202,5 +204,13 @@ namespace Doppler.CDHelper.SwarmClient
         //     ],
         //     "stack": "string"
         //   }
+    }
+
+    [SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Allow properties with camelCase because it represents a JSON")]
+    public record SwarmServiceDescriptionRepository
+    {
+        public string name { get; init; }
+        public string tag { get; init; }
+        public string imageDigest { get; init; }
     }
 }

@@ -31,6 +31,8 @@ namespace Doppler.CDHelper
             // Arrange
             var secret = "my_secret";
             var callback_url = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+            var tag = "tag";
+            var repo_name = "repoName";
 
             var loggerMock = new Mock<ILogger<HooksController>>();
 
@@ -50,6 +52,8 @@ namespace Doppler.CDHelper
                 JsonContent.Create(new
                 {
                     callback_url,
+                    push_data = new { tag },
+                    repository = new { repo_name }
                 }));
 
             // Assert
@@ -71,7 +75,9 @@ namespace Doppler.CDHelper
             Assert.Contains(logParameters, x =>
                 x.Key == "@data"
                 && x.Value is DockerHubHookData data
-                && data.callback_url == callback_url);
+                && data.callback_url == callback_url
+                && data.push_data.tag == tag
+                && data.repository.repo_name == repo_name);
         }
 
         [Fact]
@@ -79,6 +85,8 @@ namespace Doppler.CDHelper
         {
             // Arrange
             var callback_url = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+            var tag = "tag";
+            var repo_name = "repoName";
 
             var currentServices = new[] { new SwarmServiceDescription() };
 
@@ -98,7 +106,9 @@ namespace Doppler.CDHelper
             swarmServiceSelectorMock
                 .Setup(x => x.GetServicesToRedeploy(
                     It.Is<DockerHubHookData>(v =>
-                        v.callback_url == callback_url),
+                        v.callback_url == callback_url
+                        && v.push_data.tag == tag
+                        && v.repository.repo_name == repo_name),
                     currentServices))
                 .Returns(selectedServices);
 
@@ -120,6 +130,8 @@ namespace Doppler.CDHelper
                 JsonContent.Create(new
                 {
                     callback_url,
+                    push_data = new { tag },
+                    repository = new { repo_name }
                 }));
 
             // Assert

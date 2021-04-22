@@ -16,7 +16,14 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 new SwarmServiceDescription()
                 {
-                    id = "dummyId"
+                    id = "penpnhep0bsciofxzd542v62n",
+                    serviceName = "hello-int_hello-service",
+                    repository = new SwarmServiceDescriptionRepository()
+                    {
+                        imageDigest = "sha256:c7a459f13dbf082fe9b6631783f897d54978a32cc91aa8dee5fcb5630fa18a0b",
+                        name = "dopplerdock/hello-microservice",
+                        tag = "INT"
+                    }
                 }
             };
             services.AddSingleton<DummySwarmClientResult>(new DummySwarmClientResult(clientResult));
