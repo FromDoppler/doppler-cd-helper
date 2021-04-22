@@ -12,6 +12,7 @@
 **/*.csproj
 **/*.http
 **/*.ico
+**/*.png
 **/*.sh
 **/*.sln
 **/*.txt
