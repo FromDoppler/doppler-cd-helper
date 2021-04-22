@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Doppler.CDHelper.Controllers;
+using Doppler.CDHelper.SwarmClient;
+using Doppler.CDHelper.SwarmServiceSelection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -66,6 +68,57 @@ namespace Doppler.CDHelper
             Assert.Contains(
                 logParameters,
                 x => x.Key == "@data" && x.Value is DockerHubHookData data && data.callback_url == callbackUrl);
+        }
+
+        [Fact]
+        public async Task POST_dockerhub_handler_should_get_services_from_SwarmClient_filter_with_service_selector_and_redeploy_selected_ones()
+        {
+            // Arrange
+            var callbackUrl = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
+
+            var currentServices = new[] { new SwarmServiceDescription() };
+
+            var selectedServiceId1 = "selectedServiceId1";
+            var selectedServiceId2 = "selectedServiceId2";
+            var selectedServices = new[]
+            {
+                new SwarmServiceDescription() { id = selectedServiceId1 },
+                new SwarmServiceDescription() { id = selectedServiceId2 }
+            };
+
+            var swarmClientMock = new Mock<ISwarmClient>();
+            var swarmServiceSelectorMock = new Mock<ISwarmServiceSelector>();
+
+            swarmClientMock.Setup(x => x.GetServices()).ReturnsAsync(currentServices);
+
+            swarmServiceSelectorMock
+                .Setup(x => x.GetServicesToRedeploy(
+                    It.Is<DockerHubHookData>(v => v.callback_url == callbackUrl),
+                    currentServices))
+                .Returns(selectedServices);
+
+            using var customFactory = _factory.WithWebHostBuilder(c =>
+            {
+                c.ConfigureServices(s => s
+                    .AddSingleton(swarmClientMock.Object)
+                    .AddSingleton(swarmServiceSelectorMock.Object));
+            });
+
+            var client = customFactory.CreateClient(new WebApplicationFactoryClientOptions()
+            {
+                AllowAutoRedirect = false
+            });
+
+            // Act
+            var response = await client.PostAsync(
+                "/hooks/my_secret/",
+                JsonContent.Create(new { callback_url = callbackUrl }));
+
+            // Assert
+            swarmClientMock.Verify(x => x.GetServices(), Times.Once);
+            swarmClientMock.Verify(x => x.RedeployService(It.IsAny<string>()), Times.Exactly(selectedServices.Count()));
+            swarmClientMock.Verify(x => x.RedeployService(selectedServiceId1), Times.Once);
+            swarmClientMock.Verify(x => x.RedeployService(selectedServiceId2), Times.Once);
         }
     }
 }
