@@ -11,6 +11,7 @@ namespace Doppler.CDHelper
         public string callback_url { get; init; }
         public DockerHubHookDataRepository repository { get; init; }
 
+        // IMPORTANT: The digest seems not be present in this payload!
         // TODO: add more properties in order to represent the Docker Hub data:
         // {
         //     "push_data": {
