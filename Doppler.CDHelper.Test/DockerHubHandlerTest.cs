@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 using Doppler.CDHelper.Controllers;
 using Doppler.CDHelper.SwarmClient;
 using Doppler.CDHelper.SwarmServiceSelection;
+using Flurl.Http.Testing;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -146,9 +148,11 @@ namespace Doppler.CDHelper
         }
 
         [Fact]
-        public async Task POST_dockerhub_handler_should_filter_services_and_update_filtered_ones()
+        public async Task POST_dockerhub_handler_should_get_services_from_swarmpit_filter_them_and_update_filtered_ones()
         {
             // Arrange
+            const string baseUrl = "http://swarmpit/api/";
+            const string accessToken = "abc123";
             const string helloRepositoryName = "dopplerdock/hello-microservice";
             const string cdHelperRepositoryName = "dopplerdock/doppler-cd-helper";
             const string intTag = "INT";
@@ -213,22 +217,28 @@ namespace Doppler.CDHelper
                 }
             };
 
-            var currentServices = new[] {
-                helloServiceInt,
-                cdHelperServiceInt,
-                helloServiceIntWithAlternativeConfiguration,
-                helloServiceQA
-            };
-
-            var swarmClientMock = new Mock<ISwarmClient>();
-
-            swarmClientMock.Setup(x => x.GetServices()).ReturnsAsync(currentServices);
-
             using var customFactory = _factory.WithWebHostBuilder(c =>
             {
-                c.ConfigureServices(s => s
-                    .AddSingleton(swarmClientMock.Object));
+                c.ConfigureServices(s => s.AddSingleton(Options.Create(new SwarmpitSwarmClientSettings()
+                {
+                    BaseUrl = baseUrl,
+                    AccessToken = accessToken
+                })));
             });
+
+            customFactory.Server.PreserveExecutionContext = true;
+
+            using var httpTest = new HttpTest();
+
+            httpTest.ForCallsTo($"{baseUrl}services")
+                .WithHeader("Authorization", $"Bearer {accessToken}")
+                .WithVerb("GET")
+                .RespondWithJson(new[] {
+                    helloServiceInt,
+                    cdHelperServiceInt,
+                    helloServiceIntWithAlternativeConfiguration,
+                    helloServiceQA
+                });
 
             var client = customFactory.CreateClient(new WebApplicationFactoryClientOptions()
             {
@@ -242,9 +252,13 @@ namespace Doppler.CDHelper
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            swarmClientMock.Verify(x => x.RedeployService(It.IsAny<string>()), Times.Exactly(2));
-            swarmClientMock.Verify(x => x.RedeployService(helloServiceInt.id), Times.Once);
-            swarmClientMock.Verify(x => x.RedeployService(helloServiceIntWithAlternativeConfiguration.id), Times.Once);
+            Assert.Equal(3, httpTest.CallLog.Count());
+            httpTest.ShouldHaveCalled($"{baseUrl}services/{helloServiceInt.id}/redeploy")
+                .WithOAuthBearerToken(accessToken)
+                .WithVerb("POST");
+            httpTest.ShouldHaveCalled($"{baseUrl}services/{helloServiceIntWithAlternativeConfiguration.id}/redeploy")
+                .WithOAuthBearerToken(accessToken)
+                .WithVerb("POST");
         }
     }
 }

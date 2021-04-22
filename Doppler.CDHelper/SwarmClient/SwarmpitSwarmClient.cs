@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Flurl.Http;
 using Microsoft.Extensions.Options;
 
 namespace Doppler.CDHelper.SwarmClient
@@ -16,11 +17,13 @@ namespace Doppler.CDHelper.SwarmClient
         }
 
         public Task<IEnumerable<SwarmServiceDescription>> GetServices()
-            // TODO: implement me!
-            => Task.FromResult(Enumerable.Empty<SwarmServiceDescription>());
+            => $"{_settings.BaseUrl}services"
+                .WithOAuthBearerToken(_settings.AccessToken)
+                .GetJsonAsync<IEnumerable<SwarmServiceDescription>>();
 
         public Task RedeployService(string serviceId)
-            // TODO: implement me!
-            => Task.CompletedTask;
+            => $"{_settings.BaseUrl}services/{serviceId}/redeploy"
+                .WithOAuthBearerToken(_settings.AccessToken)
+                .PostAsync();
     }
 }
