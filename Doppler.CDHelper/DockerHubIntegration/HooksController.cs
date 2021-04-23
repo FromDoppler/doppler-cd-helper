@@ -7,7 +7,7 @@ using Doppler.CDHelper.SwarmServiceSelection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Doppler.CDHelper.Controllers
+namespace Doppler.CDHelper.DockerHubIntegration
 {
     [ApiController]
     public class HooksController
