@@ -28,6 +28,70 @@ namespace Doppler.CDHelper
         }
 
         [Fact]
+        public async Task POST_dockerhub_with_a_wrong_secret_should_return_error_log_data_and_do_nothing_more()
+        {
+            // Arrange
+            var secret = "my_secret";
+            var wrongSecret = "wrongSecret";
+            var callback_url = "callback_url";
+            var tag = "tag";
+            var repo_name = "repoName";
+
+            var loggerMock = new Mock<ILogger<HooksController>>();
+            var swarmClientMock = new Mock<ISwarmClient>();
+
+            using var customFactory = _factory.WithWebHostBuilder(c =>
+            {
+                c.ConfigureServices(s => s
+                    .AddSingleton(loggerMock.Object)
+                    .AddSingleton(swarmClientMock.Object)
+                    .AddSingleton(Options.Create(new DockerHubHookSettings() { Secret = secret })));
+            });
+
+            var client = customFactory.CreateClient(new WebApplicationFactoryClientOptions()
+            {
+                AllowAutoRedirect = false
+            });
+
+            // Act
+            var response = await client.PostAsync(
+                $"/hooks/{wrongSecret}/",
+                JsonContent.Create(new
+                {
+                    callback_url,
+                    push_data = new { tag },
+                    repository = new { repo_name }
+                }));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            swarmClientMock.VerifyNoOtherCalls();
+
+            // It is a FormattedLogValues object
+            // See: https://github.com/dotnet/runtime/blob/01b7e73cd378145264a7cb7a09365b41ed42b240/src/libraries/Microsoft.Extensions.Logging.Abstractions/src/FormattedLogValues.cs#L16
+            IReadOnlyList<KeyValuePair<string, object>> logParameters = null;
+
+            loggerMock.Verify(
+                x => x.Log(
+                    LogLevel.Warning,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString().StartsWith("Hook event with a wrong secret!") && AssertHelper.IsTypeAndGetValue(v, out logParameters)),
+                    It.IsAny<Exception>(),
+                    It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once);
+
+            Assert.Contains($"secret: {wrongSecret}", logParameters.ToString());
+
+            Assert.Contains(logParameters, x =>
+                x.Key == "@data"
+                && x.Value is DockerHubHookData data
+                && data.callback_url == callback_url
+                && data.push_data.tag == tag
+                && data.repository.repo_name == repo_name);
+        }
+
+        [Fact]
         public async Task POST_dockerhub_handler_should_parse_and_log_callback_url()
         {
             // Arrange
@@ -42,7 +106,8 @@ namespace Doppler.CDHelper
             {
                 c.ConfigureServices(s => s
                     .AddSingleton(loggerMock.Object)
-                    .AddSingleton(Mock.Of<ISwarmClient>()));
+                    .AddSingleton(Mock.Of<ISwarmClient>())
+                    .AddSingleton(Options.Create(new DockerHubHookSettings() { Secret = secret })));
             });
 
             var client = customFactory.CreateClient(new WebApplicationFactoryClientOptions()
@@ -69,14 +134,13 @@ namespace Doppler.CDHelper
 
             loggerMock.Verify(
                 x => x.Log(
-                    It.IsAny<LogLevel>(),
+                    LogLevel.Debug,
                     It.IsAny<EventId>(),
-                    It.Is<It.IsAnyType>((v, t) => v.ToString().StartsWith("Hook event!") && AssertHelper.IsTypeAndGetValue(v, out logParameters)),
+                    It.Is<It.IsAnyType>((v, t) => v.ToString().StartsWith("Hook event") && AssertHelper.IsTypeAndGetValue(v, out logParameters)),
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()),
                 Times.Once);
 
-            Assert.Contains($"secret: {secret};", logParameters.ToString());
             Assert.Contains(logParameters, x =>
                 x.Key == "@data"
                 && x.Value is DockerHubHookData data
@@ -89,6 +153,7 @@ namespace Doppler.CDHelper
         public async Task POST_dockerhub_handler_should_get_services_from_SwarmClient_filter_with_service_selector_and_redeploy_selected_ones()
         {
             // Arrange
+            var secret = "my_secret";
             var callback_url = "https://registry.hub.docker.com/u/dopplerdock/doppler-cd-helper/hook/2jiedged52hbhfi1acgdggdi1ih123456/";
             var tag = "tag";
             var repo_name = "repoName";
@@ -121,7 +186,8 @@ namespace Doppler.CDHelper
             {
                 c.ConfigureServices(s => s
                     .AddSingleton(swarmClientMock.Object)
-                    .AddSingleton(swarmServiceSelectorMock.Object));
+                    .AddSingleton(swarmServiceSelectorMock.Object)
+                    .AddSingleton(Options.Create(new DockerHubHookSettings() { Secret = secret })));
             });
 
             var client = customFactory.CreateClient(new WebApplicationFactoryClientOptions()
@@ -131,7 +197,7 @@ namespace Doppler.CDHelper
 
             // Act
             var response = await client.PostAsync(
-                "/hooks/my_secret/",
+                $"/hooks/{secret}/",
                 JsonContent.Create(new
                 {
                     callback_url,
@@ -151,6 +217,7 @@ namespace Doppler.CDHelper
         public async Task POST_dockerhub_handler_should_get_services_from_swarmpit_filter_them_and_update_filtered_ones()
         {
             // Arrange
+            const string secret = "my_secret";
             const string baseUrl = "http://swarmpit/api/";
             const string accessToken = "abc123";
             const string helloRepositoryName = "dopplerdock/hello-microservice";
@@ -219,11 +286,13 @@ namespace Doppler.CDHelper
 
             using var customFactory = _factory.WithWebHostBuilder(c =>
             {
-                c.ConfigureServices(s => s.AddSingleton(Options.Create(new SwarmpitSwarmClientSettings()
-                {
-                    BaseUrl = baseUrl,
-                    AccessToken = accessToken
-                })));
+                c.ConfigureServices(s =>
+                    s.AddSingleton(Options.Create(new SwarmpitSwarmClientSettings()
+                    {
+                        BaseUrl = baseUrl,
+                        AccessToken = accessToken
+                    }))
+                    .AddSingleton(Options.Create(new DockerHubHookSettings() { Secret = secret })));
             });
 
             customFactory.Server.PreserveExecutionContext = true;
@@ -247,7 +316,7 @@ namespace Doppler.CDHelper
 
             // Act
             var response = await client.PostAsync(
-                "/hooks/my_secret/",
+                $"/hooks/{secret}/",
                 JsonContent.Create(hookData));
 
             // Assert
