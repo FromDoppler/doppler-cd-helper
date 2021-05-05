@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Flurl.Http" Version="3.0.1" />
+    <PackageReference Include="Flurl.Http" Version="3.2.0" />
     <PackageReference Include="loggly-csharp-config" Version="4.6.1.92" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.10.14" />
     <PackageReference Include="Serilog.Exceptions" Version="6.1.0" />
