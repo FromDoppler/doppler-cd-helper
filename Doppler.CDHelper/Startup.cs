@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Hellang.Middleware.ProblemDetails;
 
 namespace Doppler.CDHelper
 {
@@ -29,6 +30,7 @@ namespace Doppler.CDHelper
             {
                 c.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
             });
+            services.AddProblemDetails();
             services.AddDockerHubIntegration(Configuration);
             services.AddSwarmpitSwarmClient(Configuration);
             services.AddSwarmServiceSelector();
@@ -50,10 +52,7 @@ namespace Doppler.CDHelper
         {
             app.UseHttpLogging();
 
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseProblemDetails();
 
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Doppler.CDHelper v1"));
