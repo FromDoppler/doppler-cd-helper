@@ -26,6 +26,10 @@ namespace Doppler.CDHelper
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHttpLogging(c =>
+            {
+                c.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
+            });
             services.AddProblemDetails();
             services.AddDockerHubIntegration(Configuration);
             services.AddSwarmpitSwarmClient(Configuration);
@@ -47,6 +51,8 @@ namespace Doppler.CDHelper
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseProblemDetails();
+
+            app.UseHttpLogging();
 
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Doppler.CDHelper v1"));
