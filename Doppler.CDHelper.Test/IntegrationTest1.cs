@@ -67,7 +67,7 @@ namespace Doppler.CDHelper
                 });
 
             // Act
-            var response = await client.PostAsync("/hooks/my-secret", JsonContent.Create(new object()));
+            var response = await client.PostAsync("/hooks/my-secret", JsonContent.Create(new { }));
             var responseContent = await response.Content.ReadAsStringAsync();
 
             // Assert
