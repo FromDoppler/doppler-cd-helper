@@ -45,7 +45,7 @@ namespace Doppler.CDHelper
         }
 
         [Fact]
-        public async Task PUT_hooks_should_return_problem_details_when_there_is_an_unexpected_exception()
+        public async Task POST_hooks_should_return_problem_details_when_there_is_an_unexpected_exception()
         {
             // Arrange
             var exceptionMessage = "Test unexpected exception";
