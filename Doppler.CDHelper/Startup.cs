@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Hellang.Middleware.ProblemDetails;
 
 namespace Doppler.CDHelper
 {
@@ -30,7 +29,11 @@ namespace Doppler.CDHelper
             {
                 c.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
             });
-            services.AddProblemDetails();
+            // Explicitly using Hellang because services.AddProblemDetails() generates an ambiguity
+            // between Microsoft.AspNetCore.Http.Extensions.ProblemDetailsServiceCollectionExtensions
+            // and Hellang.Middleware.ProblemDetails.ProblemDetailsExtensions
+            // TODO: consider replace Hellang by out of the box alternative (but it is not working fine right now)
+            Hellang.Middleware.ProblemDetails.ProblemDetailsExtensions.AddProblemDetails(services);
             services.AddDockerHubIntegration(Configuration);
             services.AddSwarmpitSwarmClient(Configuration);
             services.AddSwarmServiceSelector();
@@ -52,7 +55,7 @@ namespace Doppler.CDHelper
         {
             app.UseHttpLogging();
 
-            app.UseProblemDetails();
+            Hellang.Middleware.ProblemDetails.ProblemDetailsExtensions.UseProblemDetails(app);
 
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Doppler.CDHelper v1"));
