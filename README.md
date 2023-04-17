@@ -87,6 +87,6 @@ See more information about these topics in
 
 ### Run validations in local environment
 
-The source of truth related to the build process is [.doppler-ci](./.doppler-ci) (a symlink to [Jenkisfile](./Jenkinsfile)). It basically runs docker build, so, you can reproduce jenkins' build process running `docker build .` or `sh ./verify-w-docker.sh`.
+The source of truth related to the build process is [doppler-jenkins-ci.groovy](./doppler-jenkins-ci.groovy) (a symlink to [Jenkisfile](./Jenkinsfile)). It basically runs docker build, so, you can reproduce jenkins' build process running `docker build .` or `sh ./verify-w-docker.sh`.
 
 If you prefer to run these commands without docker, you can read [Dockerfile](./Dockerfile) and follow the steps manually.
